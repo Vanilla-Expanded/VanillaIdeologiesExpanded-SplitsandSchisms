@@ -65,30 +65,7 @@ namespace VIESAS
             {
                 if (IdeoSplitCanOccur())
                 {
-                    var believers = GetBelievers(Faction.OfPlayer.ideos.PrimaryIdeo).ToList();
-                    if (believers.Count >= VIESASMod.settings.minimumColonistCountForSchismToOccur)
-                    {
-                        var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
-                        var countToConvert = Rand.RangeInclusive(1, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
-                        var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
-                        var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo);
-                        Find.IdeoManager.Add(newIdeo);
-
-                        StringBuilder stringBuilder = new StringBuilder();
-                        foreach (var pawn in colonistsToConvert)
-                        {
-                            var oldCertainty = pawn.ideo.Certainty;
-                            pawn.ideo.SetIdeo(newIdeo);
-                            Traverse.Create(pawn.ideo).Field("certainty").SetValue(oldCertainty);
-                            stringBuilder.AppendLine("  - " + pawn.LabelShort);
-                        }
-                        Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name, stringBuilder.ToString().TrimEndNewlines()), 
-                            LetterDefOf.NegativeEvent, colonistsToConvert);
-                        originIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
-                        splittedIdeo = newIdeo;
-                        nextConversionTickCheck = GetNextConversionTickCheck();
-                        Faction.OfPlayer.ideos.Notify_ColonistChangedIdeo();
-                    }
+                    TrySplitIdeo();
                 }
                 else
                 {
@@ -97,6 +74,33 @@ namespace VIESAS
             }
         }
 
+        public void TrySplitIdeo()
+        {
+            var believers = GetBelievers(Faction.OfPlayer.ideos.PrimaryIdeo).ToList();
+            if (believers.Count >= VIESASMod.settings.minimumColonistCountForSchismToOccur)
+            {
+                var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
+                var countToConvert = Rand.RangeInclusive(1, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
+                var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
+                var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo);
+                Find.IdeoManager.Add(newIdeo);
+
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (var pawn in colonistsToConvert)
+                {
+                    var oldCertainty = pawn.ideo.Certainty;
+                    pawn.ideo.SetIdeo(newIdeo);
+                    Traverse.Create(pawn.ideo).Field("certainty").SetValue(oldCertainty);
+                    stringBuilder.AppendLine("  - " + pawn.LabelShort);
+                }
+                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name, stringBuilder.ToString().TrimEndNewlines()),
+                    LetterDefOf.NegativeEvent, colonistsToConvert);
+                originIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
+                splittedIdeo = newIdeo;
+                nextConversionTickCheck = GetNextConversionTickCheck();
+                Faction.OfPlayer.ideos.Notify_ColonistChangedIdeo();
+            }
+        }
         private bool IdeoSplitCanOccur()
         {
             if (originIdeo != null)
@@ -162,12 +166,73 @@ namespace VIESAS
         {
             var memesCount = VIESASMod.settings.amountOfMemesChangedDuringSchism;
             var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(memesCount, parms).Where(x => !oldIdeo.HasMeme(x));
+            var structureMemes = memesToAdd.Where(x => x.category == MemeCategory.Structure).ToList();
+            var normalMemes = memesToAdd.Where(x => x.category == MemeCategory.Normal).ToList();
+
+            foreach (var meme in memesToAdd)
+            {
+                Log.Message("About to add " + meme + " - " + meme.category);
+            }
+
+            foreach (var meme in oldIdeo.memes)
+            {
+                Log.Message("Old ideology has " + meme + " - " + meme.category);
+            }
             newIdeo.memes.AddRange(oldIdeo.memes);
+            bool canRemoveStructure = true;
+            List<MemeDef> removedMemes = new List<MemeDef>();
+
+            Predicate<MemeDef> oldMemesToRemoveValidator = delegate (MemeDef x)
+            {
+                if (x.category == MemeCategory.Structure && (!canRemoveStructure || !memesToAdd.Any(meme => meme.category == MemeCategory.Structure)))
+                {
+                    return false;
+                }
+                return true;
+            };
+
+            Predicate<MemeDef> newMemeToAddValidator = delegate (MemeDef x)
+            {
+                if (removedMemes.Contains(x))
+                {
+                    return false;
+                }
+                if (x.category == MemeCategory.Structure && newIdeo.memes.Any(meme => meme.category == MemeCategory.Structure))
+                {
+                    return false;
+                }
+                return true;
+            };
             for (var i = 0; i < memesCount; i++)
             {
-                var memeToRemove = newIdeo.memes.RandomElement();
-                newIdeo.memes.Remove(memeToRemove);
-                newIdeo.memes.Add(memesToAdd.RandomElement());
+                if (oldIdeo.memes.Where(x => x.category == MemeCategory.Normal).Count() >= 3)
+                {
+                    var memeToRemove = oldIdeo.memes.Where(x => oldMemesToRemoveValidator(x)).RandomElement();
+                    removedMemes.Add(memeToRemove);
+                    if (memeToRemove.category == MemeCategory.Structure)
+                    {
+                        newIdeo.memes.Remove(memeToRemove);
+                        Log.Message("1 Removing " + memeToRemove);
+                        var newStructure = memesToAdd.Where(x => x.category == MemeCategory.Structure && newMemeToAddValidator(x)).RandomElement();
+                        Log.Message("1 Adding " + newStructure + " to " + newIdeo);
+                        newIdeo.memes.Add(newStructure);
+                        canRemoveStructure = false;
+                    }
+                    else
+                    {
+                        newIdeo.memes.Remove(memeToRemove);
+                        Log.Message("2 Removing " + memeToRemove);
+                        var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x) && x.category == MemeCategory.Normal).RandomElement();
+                        Log.Message("2 Adding " + newMeme + " to " + newIdeo);
+                        newIdeo.memes.Add(newMeme);
+                    }
+                }
+                else
+                {
+                    var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x)).RandomElement();
+                    Log.Message("3 Adding " + newMeme + " to " + newIdeo);
+                    newIdeo.memes.Add(newMeme);
+                }
             }
             newIdeo.SortMemesInDisplayOrder();
         }

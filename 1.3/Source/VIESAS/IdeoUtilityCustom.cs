@@ -12,6 +12,11 @@ namespace VIESAS
 {
 	public static class IdeoUtilityCustom
 	{
+		[DebugAction("General", "Trigger ideo schism")]
+		public static void TriggerIdeoSchism()
+		{
+			Current.Game.GetComponent<IdeologyTracker>().TrySplitIdeo();
+		}
 		private static bool CanAdd(MemeDef meme, List<MemeDef> memes, FactionDef forFaction = null)
 		{
 			if (memes.Contains(meme))
