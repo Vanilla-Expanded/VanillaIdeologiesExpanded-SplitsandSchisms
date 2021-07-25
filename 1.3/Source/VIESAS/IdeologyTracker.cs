@@ -82,19 +82,20 @@ namespace VIESAS
                 var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
                 var countToConvert = Rand.RangeInclusive(1, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
                 var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
-                var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo);
+                StringBuilder ideoChanges = new StringBuilder();
+                var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo, ideoChanges);
                 Find.IdeoManager.Add(newIdeo);
+                StringBuilder joinerDesc = new StringBuilder();
 
-                StringBuilder stringBuilder = new StringBuilder();
                 foreach (var pawn in colonistsToConvert)
                 {
                     var oldCertainty = pawn.ideo.Certainty;
                     pawn.ideo.SetIdeo(newIdeo);
                     Traverse.Create(pawn.ideo).Field("certainty").SetValue(oldCertainty);
-                    stringBuilder.AppendLine("  - " + pawn.LabelShort);
+                    joinerDesc.AppendLine("  - " + pawn.LabelShort);
                 }
-                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name, stringBuilder.ToString().TrimEndNewlines()),
-                    LetterDefOf.NegativeEvent, colonistsToConvert);
+                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name, 
+                    ideoChanges.ToString().TrimEndNewlines(), joinerDesc.ToString().TrimEndNewlines()), LetterDefOf.NegativeEvent, colonistsToConvert);
                 originIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
                 splittedIdeo = newIdeo;
                 nextConversionTickCheck = GetNextConversionTickCheck();
@@ -138,31 +139,46 @@ namespace VIESAS
             }
             return false;
         }
-        private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo)
+        private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo, StringBuilder ideoChanges)
         {
+            Log.Message(" - GenerateNewSplittedIdeoFrom - var newIdeo = IdeoGenerator.MakeIdeo(oldIdeo.foundation.def); - 1", true);
             var newIdeo = IdeoGenerator.MakeIdeo(oldIdeo.foundation.def);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - var parms = new IdeoGenerationParms(Faction.OfPlayer.def); - 2", true);
             var parms = new IdeoGenerationParms(Faction.OfPlayer.def);
-            RandomizeMemes(newIdeo, oldIdeo, parms);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges); - 3", true);
+            RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeCulture(parms); - 4", true);
             newIdeo.foundation.RandomizeCulture(parms);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizePlace(); - 5", true);
             newIdeo.foundation.RandomizePlace();
+            Log.Message(" - GenerateNewSplittedIdeoFrom - if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity) - 6", true);
             if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity)
             {
+                Log.Message(" - GenerateNewSplittedIdeoFrom - ideoFoundation_Deity.GenerateDeities(); - 7", true);
                 ideoFoundation_Deity.GenerateDeities();
             }
             newIdeo.foundation.GenerateTextSymbols();
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizePrecepts(init: false, parms); - 9", true);
             newIdeo.foundation.RandomizePrecepts(init: false, parms);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.GenerateLeaderTitle(); - 10", true);
             newIdeo.foundation.GenerateLeaderTitle();
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeIcon(); - 11", true);
             newIdeo.foundation.RandomizeIcon();
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.InitPrecepts(parms); - 12", true);
             newIdeo.foundation.InitPrecepts(parms);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.RecachePrecepts(); - 13", true);
             newIdeo.RecachePrecepts();
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.ideo.RegenerateDescription(force: true); - 14", true);
             newIdeo.foundation.ideo.RegenerateDescription(force: true);
+            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeStyles(); - 15", true);
             newIdeo.foundation.RandomizeStyles();
 
             newIdeo.primaryFactionColor = oldIdeo.primaryFactionColor;
+            Log.Message(" - GenerateNewSplittedIdeoFrom - return newIdeo; - 17", true);
             return newIdeo;
         }
 
-        private void RandomizeMemes(Ideo newIdeo, Ideo oldIdeo, IdeoGenerationParms parms)
+        private void RandomizeMemes(Ideo newIdeo, Ideo oldIdeo, IdeoGenerationParms parms, StringBuilder ideoChanges)
         {
             var memesCount = VIESASMod.settings.amountOfMemesChangedDuringSchism;
             var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(memesCount, parms).Where(x => !oldIdeo.HasMeme(x));
@@ -216,6 +232,7 @@ namespace VIESAS
                         var newStructure = memesToAdd.Where(x => x.category == MemeCategory.Structure && newMemeToAddValidator(x)).RandomElement();
                         Log.Message("1 Adding " + newStructure + " to " + newIdeo);
                         newIdeo.memes.Add(newStructure);
+                        ideoChanges.AppendLine("VIESAS.StructureChanged".Translate() + ": " + memeToRemove.LabelCap + " -> " + newStructure.LabelCap);
                         canRemoveStructure = false;
                     }
                     else
@@ -225,6 +242,8 @@ namespace VIESAS
                         var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x) && x.category == MemeCategory.Normal).RandomElement();
                         Log.Message("2 Adding " + newMeme + " to " + newIdeo);
                         newIdeo.memes.Add(newMeme);
+                        ideoChanges.AppendLine("VIESAS.MemeChanged".Translate() + ": " + memeToRemove.LabelCap + " -> " + newMeme.LabelCap);
+
                     }
                 }
                 else
@@ -232,6 +251,14 @@ namespace VIESAS
                     var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x)).RandomElement();
                     Log.Message("3 Adding " + newMeme + " to " + newIdeo);
                     newIdeo.memes.Add(newMeme);
+                    if (newMeme.category == MemeCategory.Structure)
+                    {
+                        ideoChanges.AppendLine("VIESAS.NewStructure".Translate() + ": " + newMeme.LabelCap);
+                    }
+                    else
+                    {
+                        ideoChanges.AppendLine("VIESAS.NewMeme".Translate() + ": " + newMeme.LabelCap);
+                    }
                 }
             }
             newIdeo.SortMemesInDisplayOrder();

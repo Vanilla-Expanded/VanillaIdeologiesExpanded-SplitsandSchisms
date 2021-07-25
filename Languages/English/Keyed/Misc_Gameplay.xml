@@ -4,8 +4,10 @@
 	<VIESAS.IdeoSplit>Ideo split: {0}</VIESAS.IdeoSplit>
 	<VIESAS.IdeoSplitDesc>As with all big communities, certain traditions in your colony developed in a different way. Some people began to see the old ways as no longer valid in the times you're in, and they decided that the future requires your ideology to adapt. As such, {0} has been found.
 
-Following people decided to join the new ideology:
 {1}
+
+Following people decided to join the new ideology:
+{2}
 
 With a schism come new challenges. You will now have to take care of two unique ideologies in your colony, until one of them dominates the other.
 	</VIESAS.IdeoSplitDesc>
@@ -14,4 +16,8 @@ With a schism come new challenges. You will now have to take care of two unique 
 	<VIESAS.MinimumColonistCountForSchismToOccur>Minimum amount of Colonists in one Ideology for Schism to Occur: </VIESAS.MinimumColonistCountForSchismToOccur>
 	<VIESAS.AmountOfMemesChangedDuringSchism>Amount of Memes changed during Schism: </VIESAS.AmountOfMemesChangedDuringSchism>
 	<VIESAS.IdeologyConversionCheckDaysInterval>Ideology conversion day interval check: </VIESAS.IdeologyConversionCheckDaysInterval>
+	<VIESAS.MemeChanged>Meme changed</VIESAS.MemeChanged>
+	<VIESAS.StructureChanged>Structure changed</VIESAS.StructureChanged>
+	<VIESAS.NewMeme>New meme</VIESAS.NewMeme>
+	<VIESAS.NewStructure>New structure</VIESAS.NewStructure>
 </LanguageData>
