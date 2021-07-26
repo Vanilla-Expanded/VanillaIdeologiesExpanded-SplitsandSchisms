@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="IdeoUtilityCustom.cs" />
     <Compile Include="SettingsHelper.cs" />
+    <Compile Include="HarmonyPatches.cs" />
     <Compile Include="VIESASMod.cs" />
     <Compile Include="VIESASSettings.cs" />
     <Compile Include="IdeologyTracker.cs" />

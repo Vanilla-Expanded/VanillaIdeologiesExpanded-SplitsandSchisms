@@ -14,9 +14,10 @@ namespace VIESAS
         public Ideo originIdeo;
         public Ideo splittedIdeo;
         public int nextConversionTickCheck;
+        public static IdeologyTracker Instance;
         public IdeologyTracker(Game game)
         {
-
+            Instance = this;
         }
         private IEnumerable<Pawn> GetConvertablePawns(Ideo ideo, List<Pawn> pawns)
         {
@@ -45,6 +46,7 @@ namespace VIESAS
         public override void LoadedGame()
         {
             base.LoadedGame();
+            Instance = this;
             if (nextConversionTickCheck == 0)
             {
                 nextConversionTickCheck = GetNextConversionTickCheck();
@@ -53,6 +55,7 @@ namespace VIESAS
         public override void StartedNewGame()
         {
             base.StartedNewGame();
+            Instance = this;
             if (nextConversionTickCheck == 0)
             {
                 nextConversionTickCheck = GetNextConversionTickCheck();
@@ -108,6 +111,7 @@ namespace VIESAS
             {
                 if (!NoBelieversIn(originIdeo))
                 {
+                    originIdeo = null;
                     return true;
                 }
             }
@@ -119,6 +123,7 @@ namespace VIESAS
             {
                 if (!NoBelieversIn(splittedIdeo))
                 {
+                    splittedIdeo = null;
                     return true;
                 }
             }
@@ -129,15 +134,61 @@ namespace VIESAS
             return false;
         }
 
+        public void RecheckIdeos()
+        {
+            if (originIdeo != null)
+            {
+                if (NoBelieversIn(originIdeo))
+                {
+                    originIdeo = null;
+                    nextConversionTickCheck = GetNextConversionTickCheck();
+                }
+            }
+            if (splittedIdeo != null)
+            {
+                if (NoBelieversIn(splittedIdeo))
+                {
+                    splittedIdeo = null;
+                    nextConversionTickCheck = GetNextConversionTickCheck();
+                }
+            }
+        }
         private bool NoBelieversIn(Ideo ideo)
         {
             if (!GetBelievers(ideo).Any())
             {
+                if (Faction.OfPlayer.ideos.IdeosMinorListForReading.Contains(ideo))
+                {
+                    Faction.OfPlayer.ideos.IdeosMinorListForReading.Remove(ideo);
+                }
                 Log.Message("No believers in " + ideo);
-                Find.IdeoManager.Remove(ideo);
+                if (CanRemoveIdeo(ideo))
+                {
+                    Find.LetterStack.ReceiveLetter("VIESAS.OldIdeoForgotten".Translate(ideo), "VIESAS.OldIdeoForgottenDesc".Translate(ideo), LetterDefOf.NeutralEvent);
+                    Find.IdeoManager.Remove(ideo);
+                }
                 return true;
             }
             return false;
+        }
+
+        private bool CanRemoveIdeo(Ideo ideo)
+        {
+            foreach (Faction allFaction in Find.FactionManager.AllFactions)
+            {
+                if (allFaction.ideos != null && allFaction.ideos.AllIdeos.Contains(ideo))
+                {
+                    return false;
+                }
+            }
+            foreach (Pawn allMap in PawnsFinder.AllMaps)
+            {
+                if (allMap.ideo != null && allMap.ideo.Ideo == ideo)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo, StringBuilder ideoChanges)
         {
@@ -266,6 +317,7 @@ namespace VIESAS
         public override void ExposeData()
         {
             base.ExposeData();
+            Instance = this;
             Scribe_Values.Look(ref nextConversionTickCheck, "nextConversionTickCheck");
             Scribe_References.Look(ref originIdeo, "originIdeo");
             Scribe_References.Look(ref splittedIdeo, "splittedIdeo");

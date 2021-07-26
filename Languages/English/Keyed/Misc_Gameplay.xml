@@ -20,4 +20,9 @@ With a schism come new challenges. You will now have to take care of two unique 
 	<VIESAS.StructureChanged>Structure changed</VIESAS.StructureChanged>
 	<VIESAS.NewMeme>New meme</VIESAS.NewMeme>
 	<VIESAS.NewStructure>New structure</VIESAS.NewStructure>
+	<VIESAS.OldIdeoForgotten>{0} forgotten</VIESAS.OldIdeoForgotten>
+	<VIESAS.OldIdeoForgottenDesc>{0} has been forgotten. Nobody on this planet remembers the old ways, and the traditions, culture and creed of that ideology have been lost to progress.
+
+Ideology has vanished due to lack of followers.</VIESAS.OldIdeoForgottenDesc>
+	
 </LanguageData>
