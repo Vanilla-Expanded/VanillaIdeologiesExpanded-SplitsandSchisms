@@ -83,7 +83,16 @@ namespace VIESAS
             if (believers.Count >= VIESASMod.settings.minimumColonistCountForSchismToOccur)
             {
                 var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
-                var countToConvert = Rand.RangeInclusive(1, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
+                int minPopValue;
+                if (convertablePawns.Count > 3)
+                {
+                    minPopValue = 2;
+                }
+                else
+                {
+                    minPopValue = 1;
+                }
+                var countToConvert = Rand.RangeInclusive(minPopValue, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
                 var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
                 StringBuilder ideoChanges = new StringBuilder();
                 var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo, ideoChanges);
