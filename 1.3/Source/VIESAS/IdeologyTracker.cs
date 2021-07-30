@@ -208,9 +208,9 @@ namespace VIESAS
             Log.Message(" - GenerateNewSplittedIdeoFrom - RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges); - 3", true);
             RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges);
             Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeCulture(parms); - 4", true);
-            newIdeo.foundation.RandomizeCulture(parms);
+            newIdeo.culture = oldIdeo.culture;
             Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizePlace(); - 5", true);
-            newIdeo.foundation.RandomizePlace();
+            newIdeo.foundation.place = oldIdeo.foundation.place;
             Log.Message(" - GenerateNewSplittedIdeoFrom - if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity) - 6", true);
             if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity)
             {
@@ -230,8 +230,14 @@ namespace VIESAS
             newIdeo.RecachePrecepts();
             Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.ideo.RegenerateDescription(force: true); - 14", true);
             newIdeo.foundation.ideo.RegenerateDescription(force: true);
+
             Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeStyles(); - 15", true);
-            newIdeo.foundation.RandomizeStyles();
+            newIdeo.thingStyleCategories = new List<ThingStyleCategoryWithPriority>();
+            foreach (var cat in oldIdeo.thingStyleCategories)
+            {
+                newIdeo.thingStyleCategories.Add(cat);
+            }
+            newIdeo.style.ResetStylesForThingDef();
 
             newIdeo.primaryFactionColor = oldIdeo.primaryFactionColor;
             Log.Message(" - GenerateNewSplittedIdeoFrom - return newIdeo; - 17", true);

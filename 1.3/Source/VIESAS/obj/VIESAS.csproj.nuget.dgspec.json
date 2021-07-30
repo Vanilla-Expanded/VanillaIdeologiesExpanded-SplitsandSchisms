@@ -36,7 +36,7 @@
           "dependencies": {
             "Krafs.Rimworld.Ref": {
               "target": "Package",
-              "version": "[1.3.3072, )"
+              "version": "[1.3.3074, )"
             },
             "Lib.Harmony": {
               "target": "Package",
