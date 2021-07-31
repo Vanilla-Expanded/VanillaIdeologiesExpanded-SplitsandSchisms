@@ -106,8 +106,9 @@ namespace VIESAS
                     Traverse.Create(pawn.ideo).Field("certainty").SetValue(oldCertainty);
                     joinerDesc.AppendLine("  - " + pawn.LabelShort);
                 }
-                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name, 
+                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name,
                     ideoChanges.ToString().TrimEndNewlines(), joinerDesc.ToString().TrimEndNewlines()), LetterDefOf.NegativeEvent, colonistsToConvert);
+
                 originIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
                 splittedIdeo = newIdeo;
                 nextConversionTickCheck = GetNextConversionTickCheck();
@@ -118,7 +119,7 @@ namespace VIESAS
         {
             if (originIdeo != null)
             {
-                if (!NoBelieversIn(originIdeo))
+                if (NoBelieversIn(originIdeo))
                 {
                     originIdeo = null;
                     return true;
@@ -130,7 +131,7 @@ namespace VIESAS
             }
             if (splittedIdeo != null)
             {
-                if (!NoBelieversIn(splittedIdeo))
+                if (NoBelieversIn(splittedIdeo))
                 {
                     splittedIdeo = null;
                     return true;
@@ -142,6 +143,7 @@ namespace VIESAS
             }
             return false;
         }
+
 
         public void RecheckIdeos()
         {
@@ -171,6 +173,17 @@ namespace VIESAS
                     Faction.OfPlayer.ideos.IdeosMinorListForReading.Remove(ideo);
                 }
                 Log.Message("No believers in " + ideo);
+                foreach (var pawn in Find.ColonistBar.Entries.Select(x => x.pawn))
+                {
+                    if (pawn != null)
+                    {
+                        if (pawn.Ideo == ideo)
+                        {
+                            Log.Error("No believers, but we have " + pawn + " believing in " + ideo);
+                        }
+                        Log.Message("Ideo check: " + ideo + " - " + pawn + " believes in " + pawn.Ideo);
+                    }
+                }
                 if (CanRemoveIdeo(ideo))
                 {
                     Find.LetterStack.ReceiveLetter("VIESAS.OldIdeoForgotten".Translate(ideo), "VIESAS.OldIdeoForgottenDesc".Translate(ideo), LetterDefOf.NeutralEvent);
@@ -201,37 +214,23 @@ namespace VIESAS
         }
         private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo, StringBuilder ideoChanges)
         {
-            Log.Message(" - GenerateNewSplittedIdeoFrom - var newIdeo = IdeoGenerator.MakeIdeo(oldIdeo.foundation.def); - 1", true);
             var newIdeo = IdeoGenerator.MakeIdeo(oldIdeo.foundation.def);
-            Log.Message(" - GenerateNewSplittedIdeoFrom - var parms = new IdeoGenerationParms(Faction.OfPlayer.def); - 2", true);
             var parms = new IdeoGenerationParms(Faction.OfPlayer.def);
-            Log.Message(" - GenerateNewSplittedIdeoFrom - RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges); - 3", true);
             RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges);
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeCulture(parms); - 4", true);
             newIdeo.culture = oldIdeo.culture;
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizePlace(); - 5", true);
             newIdeo.foundation.place = oldIdeo.foundation.place;
-            Log.Message(" - GenerateNewSplittedIdeoFrom - if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity) - 6", true);
             if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity)
             {
-                Log.Message(" - GenerateNewSplittedIdeoFrom - ideoFoundation_Deity.GenerateDeities(); - 7", true);
                 ideoFoundation_Deity.GenerateDeities();
             }
             newIdeo.foundation.GenerateTextSymbols();
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizePrecepts(init: false, parms); - 9", true);
             newIdeo.foundation.RandomizePrecepts(init: false, parms);
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.GenerateLeaderTitle(); - 10", true);
             newIdeo.foundation.GenerateLeaderTitle();
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeIcon(); - 11", true);
             newIdeo.foundation.RandomizeIcon();
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.InitPrecepts(parms); - 12", true);
             newIdeo.foundation.InitPrecepts(parms);
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.RecachePrecepts(); - 13", true);
             newIdeo.RecachePrecepts();
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.ideo.RegenerateDescription(force: true); - 14", true);
             newIdeo.foundation.ideo.RegenerateDescription(force: true);
 
-            Log.Message(" - GenerateNewSplittedIdeoFrom - newIdeo.foundation.RandomizeStyles(); - 15", true);
             newIdeo.thingStyleCategories = new List<ThingStyleCategoryWithPriority>();
             foreach (var cat in oldIdeo.thingStyleCategories)
             {
@@ -240,33 +239,30 @@ namespace VIESAS
             newIdeo.style.ResetStylesForThingDef();
 
             newIdeo.primaryFactionColor = oldIdeo.primaryFactionColor;
-            Log.Message(" - GenerateNewSplittedIdeoFrom - return newIdeo; - 17", true);
             return newIdeo;
         }
 
         private void RandomizeMemes(Ideo newIdeo, Ideo oldIdeo, IdeoGenerationParms parms, StringBuilder ideoChanges)
         {
             var memesCount = VIESASMod.settings.amountOfMemesChangedDuringSchism;
-            var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(memesCount, parms).Where(x => !oldIdeo.HasMeme(x));
-            var structureMemes = memesToAdd.Where(x => x.category == MemeCategory.Structure).ToList();
+            var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(parms).Where(x => !oldIdeo.HasMeme(x));
             var normalMemes = memesToAdd.Where(x => x.category == MemeCategory.Normal).ToList();
 
-            foreach (var meme in memesToAdd)
-            {
-                Log.Message("About to add " + meme + " - " + meme.category);
-            }
-
-            foreach (var meme in oldIdeo.memes)
-            {
-                Log.Message("Old ideology has " + meme + " - " + meme.category);
-            }
             newIdeo.memes.AddRange(oldIdeo.memes);
-            bool canRemoveStructure = true;
             List<MemeDef> removedMemes = new List<MemeDef>();
+            List<MemeDef> addedMemes = new List<MemeDef>();
 
             Predicate<MemeDef> oldMemesToRemoveValidator = delegate (MemeDef x)
             {
-                if (x.category == MemeCategory.Structure && (!canRemoveStructure || !memesToAdd.Any(meme => meme.category == MemeCategory.Structure)))
+                if (x.category == MemeCategory.Structure)
+                {
+                    return false;
+                }
+                if (!newIdeo.memes.Contains(x))
+                {
+                    return false;
+                }
+                if (addedMemes.Contains(x))
                 {
                     return false;
                 }
@@ -279,56 +275,78 @@ namespace VIESAS
                 {
                     return false;
                 }
-                if (x.category == MemeCategory.Structure && newIdeo.memes.Any(meme => meme.category == MemeCategory.Structure))
+                if (!IdeoUtilityCustom.CanAdd(x, newIdeo.memes, Faction.OfPlayer.def))
+                {
+                    return false;
+                }
+                if (x.category == MemeCategory.Structure)
                 {
                     return false;
                 }
                 return true;
             };
-            for (var i = 0; i < memesCount; i++)
-            {
-                if (oldIdeo.memes.Where(x => x.category == MemeCategory.Normal).Count() >= 3)
-                {
-                    var memeToRemove = oldIdeo.memes.Where(x => oldMemesToRemoveValidator(x)).RandomElement();
-                    removedMemes.Add(memeToRemove);
-                    if (memeToRemove.category == MemeCategory.Structure)
-                    {
-                        newIdeo.memes.Remove(memeToRemove);
-                        Log.Message("1 Removing " + memeToRemove);
-                        var newStructure = memesToAdd.Where(x => x.category == MemeCategory.Structure && newMemeToAddValidator(x)).RandomElement();
-                        Log.Message("1 Adding " + newStructure + " to " + newIdeo);
-                        newIdeo.memes.Add(newStructure);
-                        ideoChanges.AppendLine("VIESAS.StructureChanged".Translate() + ": " + memeToRemove.LabelCap + " -> " + newStructure.LabelCap);
-                        canRemoveStructure = false;
-                    }
-                    else
-                    {
-                        newIdeo.memes.Remove(memeToRemove);
-                        Log.Message("2 Removing " + memeToRemove);
-                        var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x) && x.category == MemeCategory.Normal).RandomElement();
-                        Log.Message("2 Adding " + newMeme + " to " + newIdeo);
-                        newIdeo.memes.Add(newMeme);
-                        ideoChanges.AppendLine("VIESAS.MemeChanged".Translate() + ": " + memeToRemove.LabelCap + " -> " + newMeme.LabelCap);
+            int maxImpact = memesToAdd.Max(x => x.impact);
 
-                    }
+            foreach (var meme in memesToAdd)
+            {
+                if (newMemeToAddValidator(meme))
+                {
+                    Log.Message("About to add " + meme + " - " + meme.category);
                 }
                 else
                 {
-                    var newMeme = memesToAdd.Where(x => newMemeToAddValidator(x)).RandomElement();
-                    Log.Message("3 Adding " + newMeme + " to " + newIdeo);
-                    newIdeo.memes.Add(newMeme);
-                    if (newMeme.category == MemeCategory.Structure)
+                    Log.Message("Can't add " + meme + " - " + meme.category);
+                }
+            }
+
+            foreach (var meme in oldIdeo.memes)
+            {
+                Log.Message("Old ideology has " + meme + " - " + meme.category);
+            }
+
+            for (var i = 0; i < memesCount; i++)
+            {
+                if (oldIdeo.memes.Count(x => x.category == MemeCategory.Normal) >= 3 || newIdeo.memes.Count(x => x.category == MemeCategory.Normal) >= 3)
+                {
+                    if (oldIdeo.memes.Where(x => oldMemesToRemoveValidator(x)).TryRandomElement(out var memeToRemove))
                     {
-                        ideoChanges.AppendLine("VIESAS.NewStructure".Translate() + ": " + newMeme.LabelCap);
+                        newIdeo.memes.Remove(memeToRemove);
+                        if (memesToAdd.Where(x => newMemeToAddValidator(x)).TryRandomElementByWeight(x => (maxImpact + 1) - x.impact, out var newMeme))
+                        {
+                            removedMemes.Add(memeToRemove);
+                            Log.Message("2 Removing " + memeToRemove);
+                            Log.Message("2 Adding " + newMeme + " to " + newIdeo + " impact: " + newMeme.impact);
+                            newIdeo.memes.Add(newMeme);
+                            addedMemes.Add(newMeme);
+                            ideoChanges.AppendLine("VIESAS.MemeChanged".Translate() + ": " + memeToRemove.LabelCap + " -> " + newMeme.LabelCap);
+                        }
+                        else
+                        {
+                            newIdeo.memes.Add(memeToRemove);
+                            Log.Error("1 Couldn't add a meme");
+                        }
                     }
                     else
                     {
-                        ideoChanges.AppendLine("VIESAS.NewMeme".Translate() + ": " + newMeme.LabelCap);
+                        Log.Error("2 Couldn't add a meme");
                     }
+                }
+
+                else if (memesToAdd.Where(x => newMemeToAddValidator(x)).TryRandomElementByWeight(x => (maxImpact + 1) - x.impact, out var newMeme))
+                {
+                    Log.Message("3 Adding " + newMeme + " to " + newIdeo + " impact: " + newMeme.impact);
+                    newIdeo.memes.Add(newMeme);
+                    addedMemes.Add(newMeme);
+                    ideoChanges.AppendLine("VIESAS.NewMeme".Translate() + ": " + newMeme.LabelCap);
+                }
+                else
+                {
+                    Log.Error("3 Couldn't add a meme");
                 }
             }
             newIdeo.SortMemesInDisplayOrder();
         }
+
         public override void ExposeData()
         {
             base.ExposeData();
