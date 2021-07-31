@@ -186,7 +186,7 @@ namespace VIESAS
                 }
                 if (CanRemoveIdeo(ideo))
                 {
-                    Find.LetterStack.ReceiveLetter("VIESAS.OldIdeoForgotten".Translate(ideo), "VIESAS.OldIdeoForgottenDesc".Translate(ideo), LetterDefOf.NeutralEvent);
+                    Find.LetterStack.ReceiveLetter("VIESAS.OldIdeoForgotten".Translate(ideo.name), "VIESAS.OldIdeoForgottenDesc".Translate(ideo.name), LetterDefOf.NeutralEvent);
                     Find.IdeoManager.Remove(ideo);
                 }
                 return true;
