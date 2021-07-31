@@ -245,7 +245,7 @@ namespace VIESAS
         private void RandomizeMemes(Ideo newIdeo, Ideo oldIdeo, IdeoGenerationParms parms, StringBuilder ideoChanges)
         {
             var memesCount = VIESASMod.settings.amountOfMemesChangedDuringSchism;
-            var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(parms).Where(x => !oldIdeo.HasMeme(x));
+            var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(parms).Where(x => !oldIdeo.HasMeme(x)).Distinct();
             var normalMemes = memesToAdd.Where(x => x.category == MemeCategory.Normal).ToList();
 
             newIdeo.memes.AddRange(oldIdeo.memes);
@@ -280,6 +280,10 @@ namespace VIESAS
                     return false;
                 }
                 if (x.category == MemeCategory.Structure)
+                {
+                    return false;
+                }
+                if (addedMemes.Contains(x))
                 {
                     return false;
                 }
