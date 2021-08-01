@@ -17,7 +17,7 @@ namespace VIESAS
 		{
 			Current.Game.GetComponent<IdeologyTracker>().TrySplitIdeo();
 		}
-		private static bool CanAdd(MemeDef meme, List<MemeDef> memes, FactionDef forFaction = null)
+		public static bool CanAdd(MemeDef meme, List<MemeDef> memes, FactionDef forFaction = null)
 		{
 			if (memes.Contains(meme))
 			{
@@ -40,7 +40,7 @@ namespace VIESAS
 			return true;
 		}
 
-		public static List<MemeDef> GenerateRandomMemes(int count, IdeoGenerationParms parms)
+		public static List<MemeDef> GenerateRandomMemes(IdeoGenerationParms parms)
 		{
 			FactionDef forFaction = parms.forFaction;
 			bool forPlayerFaction = forFaction != null && forFaction.isPlayer;
@@ -50,17 +50,13 @@ namespace VIESAS
 			{
 				for (int i = 0; i < forFaction.requiredMemes.Count; i++)
 				{
-					memes.Add(forFaction.requiredMemes[i]);
 					if (forFaction.requiredMemes[i].category == MemeCategory.Normal)
 					{
-						count--;
-					}
-					else if (forFaction.requiredMemes[i].category == MemeCategory.Structure)
-					{
-						flag = true;
+						memes.Add(forFaction.requiredMemes[i]);
 					}
 				}
 			}
+
 			if (forFaction != null && forFaction.structureMemeWeights != null && !flag)
 			{
 				MemeWeight result2;
@@ -75,26 +71,16 @@ namespace VIESAS
 					flag = true;
 				}
 			}
-			if (!flag)
+
+			foreach (var meme in DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && CanAdd(x, memes, forFaction)))
 			{
-				MemeDef result4;
-				if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && CanAdd(x, memes, forFaction) && (!AnyIdeoHas(x) || forPlayerFaction)).TryRandomElement(out var result3))
-				{
-					memes.Add(result3);
-				}
-				else if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Structure && CanAdd(x, memes, forFaction)).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out result4))
-				{
-					memes.Add(result4);
+				if (!memes.Contains(meme))
+                {
+					memes.Add(meme);
 				}
 			}
-			for (int j = 0; j < count; j++)
-			{
-				if (DefDatabase<MemeDef>.AllDefs.Where((MemeDef x) => x.category == MemeCategory.Normal && CanAdd(x, memes, forFaction) && (parms.disallowedMemes == null || !parms.disallowedMemes.Contains(x))).TryRandomElementByWeight((MemeDef x) => x.randomizationSelectionWeightFactor, out var result5))
-				{
-					memes.Add(result5);
-				}
-			}
-			return memes;
+
+			return memes.Distinct().ToList();
 		}
 		private static bool AnyIdeoHas(MemeDef meme)
 		{

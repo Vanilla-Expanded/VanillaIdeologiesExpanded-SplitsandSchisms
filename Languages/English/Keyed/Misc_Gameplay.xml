@@ -9,17 +9,14 @@
 Following people decided to join the new ideology:
 {2}
 
-With a schism come new challenges. You will now have to take care of two unique ideologies in your colony, until one of them dominates the other.
-	</VIESAS.IdeoSplitDesc>
+With a schism come new challenges. You will now have to take care of two unique ideologies in your colony, until one of them dominates the other.</VIESAS.IdeoSplitDesc>
 	<VIESAS.OddsOfSchismToOccur>Percentage odds of Schism occuring: </VIESAS.OddsOfSchismToOccur>
 	<VIESAS.PctOfColonistsToTurnToNewIdeology>Percentage amount of Colonists in a new Ideology: </VIESAS.PctOfColonistsToTurnToNewIdeology>
 	<VIESAS.MinimumColonistCountForSchismToOccur>Minimum amount of Colonists in one Ideology for Schism to Occur: </VIESAS.MinimumColonistCountForSchismToOccur>
 	<VIESAS.AmountOfMemesChangedDuringSchism>Amount of Memes changed during Schism: </VIESAS.AmountOfMemesChangedDuringSchism>
 	<VIESAS.IdeologyConversionCheckDaysInterval>Ideology conversion day interval check: </VIESAS.IdeologyConversionCheckDaysInterval>
 	<VIESAS.MemeChanged>Meme changed</VIESAS.MemeChanged>
-	<VIESAS.StructureChanged>Structure changed</VIESAS.StructureChanged>
 	<VIESAS.NewMeme>New meme</VIESAS.NewMeme>
-	<VIESAS.NewStructure>New structure</VIESAS.NewStructure>
 	<VIESAS.OldIdeoForgotten>{0} forgotten</VIESAS.OldIdeoForgotten>
 	<VIESAS.OldIdeoForgottenDesc>{0} has been forgotten. Nobody on this planet remembers the old ways, and the traditions, culture and creed of that ideology have been lost to progress.
 
