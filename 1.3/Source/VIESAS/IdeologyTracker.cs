@@ -196,6 +196,10 @@ namespace VIESAS
 
         private bool CanRemoveIdeo(Ideo ideo)
         {
+            if (!Find.IdeoManager.ideos.Contains(ideo)) // it's removed already
+            {
+                return false;
+            }
             foreach (Faction allFaction in Find.FactionManager.AllFactions)
             {
                 if (allFaction.ideos != null && allFaction.ideos.AllIdeos.Contains(ideo))
@@ -210,6 +214,7 @@ namespace VIESAS
                     return false;
                 }
             }
+
             return true;
         }
         private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo, StringBuilder ideoChanges)

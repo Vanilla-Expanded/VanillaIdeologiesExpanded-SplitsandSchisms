@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "kQCvup3t96QVS/o6hC/li18LVQpyDj7xT2kq2aX3RkdMcxNjfYxaolxY48gwHo84A0rB8zNfW1xhyb3hT+r/kA==",
+  "dgSpecHash": "4P8wVSklZr0VFTY//SedzLdiWjDJ6j0KuEmfuQj/2OSWvN7kx512Aza47iqYbtkjzltTdenW5rMCznYztEb1lg==",
   "success": true,
-  "projectFilePath": "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
+  "projectFilePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Vova\\.nuget\\packages\\krafs.rimworld.ref\\1.3.3074\\krafs.rimworld.ref.1.3.3074.nupkg.sha512",
-    "C:\\Users\\Vova\\.nuget\\packages\\lib.harmony\\2.1.0\\lib.harmony.2.1.0.nupkg.sha512"
+    "C:\\Users\\Vova\\.nuget\\packages\\krafs.rimworld.ref\\1.3.3080\\krafs.rimworld.ref.1.3.3080.nupkg.sha512",
+    "C:\\Users\\Vova\\.nuget\\packages\\lib.harmony\\2.1.1\\lib.harmony.2.1.1.nupkg.sha512"
   ],
   "logs": []
 }
