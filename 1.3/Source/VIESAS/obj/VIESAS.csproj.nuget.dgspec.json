@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj": {}
+    "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj": {}
   },
   "projects": {
-    "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj": {
+    "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
+        "projectUniqueName": "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
         "projectName": "VIESAS",
-        "projectPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
+        "projectPath": "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\VIESAS.csproj",
         "packagesPath": "C:\\Users\\Vova\\.nuget\\packages\\",
-        "outputPath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\obj\\",
+        "outputPath": "c:\\Program Files (x86)\\Steam\\steamapps\\common\\RimWorld\\Mods\\VanillaIdeologiesExpanded-SplitsandSchisms\\1.3\\Source\\VIESAS\\obj\\",
         "projectStyle": "PackageReference",
         "skipContentFileWrite": true,
         "configFilePaths": [
@@ -36,7 +36,7 @@
           "dependencies": {
             "Krafs.Rimworld.Ref": {
               "target": "Package",
-              "version": "[1.3.3080, )"
+              "version": "[1.3.3087, )"
             },
             "Lib.Harmony": {
               "target": "Package",
