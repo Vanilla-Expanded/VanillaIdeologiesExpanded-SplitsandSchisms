@@ -15,6 +15,9 @@ namespace VIESAS
         public Ideo splittedIdeo;
         public int nextConversionTickCheck;
         public static IdeologyTracker Instance;
+
+        private int lastBelieverCheckTick;
+        private List<Pawn> cachedPawnList;
         public IdeologyTracker(Game game)
         {
             Instance = this;
@@ -79,7 +82,12 @@ namespace VIESAS
 
         public void TrySplitIdeo()
         {
-            var believers = GetBelievers(Faction.OfPlayer.ideos.PrimaryIdeo).ToList();
+            if (Find.TickManager.TicksGame > lastBelieverCheckTick + 60 || cachedPawnList is null)
+            {
+                cachedPawnList = GetBelievers(Faction.OfPlayer.ideos.PrimaryIdeo).ToList();
+                lastBelieverCheckTick = Find.TickManager.TicksGame;
+            }
+            var believers = cachedPawnList;
             if (believers.Count >= VIESASMod.settings.minimumColonistCountForSchismToOccur)
             {
                 var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
