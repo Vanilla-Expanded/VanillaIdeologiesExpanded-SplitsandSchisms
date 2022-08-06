@@ -67,7 +67,7 @@ namespace VIESAS
         public override void GameComponentTick()
         {
             base.GameComponentTick();
-            if (Find.TickManager.TicksGame >= nextConversionTickCheck)
+            if (Find.TickManager.TicksGame >= nextConversionTickCheck && Find.TickManager.TicksGame % 60 == 0)
             {
                 if (IdeoSplitCanOccur())
                 {
