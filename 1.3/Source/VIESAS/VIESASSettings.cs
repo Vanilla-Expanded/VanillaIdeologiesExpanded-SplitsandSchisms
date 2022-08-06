@@ -22,11 +22,11 @@ namespace VIESAS
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref minimumColonistCountForSchismToOccur, "minimumColonistCountForSchismToOccur");
-            Scribe_Values.Look(ref pctOfColonistsToTurnToNewIdeology, "pctOfColonistsToTurnToNewIdeology");
-            Scribe_Values.Look(ref amountOfMemesChangedDuringSchism, "amountOfMemesChangedDuringSchism");
-            Scribe_Values.Look(ref oddsOfSchismOccuring, "oddsOfSchismOccuring");
-            Scribe_Values.Look(ref ideologyConversionCheckDaysInterval, "ideologyConversionCheckDaysInterval");
+            Scribe_Values.Look(ref minimumColonistCountForSchismToOccur, "minimumColonistCountForSchismToOccur", 12);
+            Scribe_Values.Look(ref pctOfColonistsToTurnToNewIdeology, "pctOfColonistsToTurnToNewIdeology", 0.5f);
+            Scribe_Values.Look(ref amountOfMemesChangedDuringSchism, "amountOfMemesChangedDuringSchism", 1);
+            Scribe_Values.Look(ref oddsOfSchismOccuring, "oddsOfSchismOccuring", 0.5f);
+            Scribe_Values.Look(ref ideologyConversionCheckDaysInterval, "ideologyConversionCheckDaysInterval", 15);
         }
         public void DoSettingsWindowContents(Rect inRect)
         {
@@ -39,9 +39,16 @@ namespace VIESAS
             listingStandard.SliderLabeled("VIESAS.MinimumColonistCountForSchismToOccur".Translate(), ref minimumColonistCountForSchismToOccur, minimumColonistCountForSchismToOccur.ToString(), 2, 100);
             listingStandard.SliderLabeled("VIESAS.AmountOfMemesChangedDuringSchism".Translate(), ref amountOfMemesChangedDuringSchism, amountOfMemesChangedDuringSchism.ToString(), 1, 3);
             listingStandard.SliderLabeled("VIESAS.IdeologyConversionCheckDaysInterval".Translate(), ref ideologyConversionCheckDaysInterval, ideologyConversionCheckDaysInterval.ToString(), 1, 30);
+            if (listingStandard.ButtonText("Reset".Translate()))
+            {
+                minimumColonistCountForSchismToOccur = 12;
+                amountOfMemesChangedDuringSchism = 1;
+                pctOfColonistsToTurnToNewIdeology = 0.5f;
+                oddsOfSchismOccuring = 0.5f;
+                ideologyConversionCheckDaysInterval = 15;
+            }
             listingStandard.End();
             Widgets.EndScrollView();
-            base.Write();
         }
         private static Vector2 scrollPosition = Vector2.zero;
 
