@@ -293,7 +293,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdeoUIUtility_DoIdeoListAndDetails_Patch.cs" />
+    <Compile Include="Window_ConfigureIdeo.cs" />
     <Compile Include="IdeoUtilityCustom.cs" />
+    <Compile Include="Page_ConfigureFluidIdeo_Colonists.cs" />
+    <Compile Include="Page_ConfigureIdeo_Colonists.cs" />
     <Compile Include="SettingsHelper.cs" />
     <Compile Include="HarmonyPatches.cs" />
     <Compile Include="VIESASMod.cs" />
@@ -302,11 +306,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Krafs.Publicizer">
+      <Version>2.2.1</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Lib.Harmony">
       <Version>2.3.3</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
