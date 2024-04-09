@@ -9,6 +9,7 @@
 		<li>1.5</li>
 	</supportedVersions>
 	<packageId>VanillaExpanded.VIESAS</packageId>
+	<modIconPath IgnoreIfNoMatchingField="True">UI/VELogo</modIconPath>
 	<description>The goal of this mod is to add a new mechanic to make ideologies a bit more of a gameplay affecting challenge, as well as introduce a new form of threat that needs to be countered by the player once the colony is big enough.
 
 Ideologies, while docile and strong in small societies, often tend to divide larger societies. The more people there is, the more ideologies differ. This mod introduces an Ideological Schism, which is an event in which a new ideology emerges in some percent of your colonists. In a way, the new ideology is very much similar to what the base ideology is, except for one or two different memes.
