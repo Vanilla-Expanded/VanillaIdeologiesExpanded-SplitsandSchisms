@@ -71,10 +71,10 @@ namespace VIESAS
                 joinerDesc.AppendLine("  - " + pawn.LabelShort);
             }
             Text.Font = GameFont.Medium;
-            var titleRect = new Rect(inRect.x, inRect.y, viewRect.width, 24);
+            var titleRect = new Rect(inRect.x, inRect.y, viewRect.width, 32);
             Text.Anchor = TextAnchor.MiddleCenter;
             Widgets.Label(titleRect, "VIESAS.IdeoSplit".Translate(newIdeo.name));
-            scrollHeight += 24;
+            scrollHeight += 32;
             Text.Anchor = TextAnchor.UpperLeft;
             Text.Font = GameFont.Small;
             var text = "VIESAS.IdeoSplitDesc".Translate(newIdeo.name,
