@@ -34,7 +34,7 @@ namespace VIESAS
         }
         private IEnumerable<Pawn> GetBelievers(Ideo ideo)
         {
-            foreach (var pawn in PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_FreeColonists)
+            foreach (var pawn in PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_Colonists)
             {
                 if (pawn.IsColonist && pawn.Ideo == ideo)
                 {
@@ -42,10 +42,12 @@ namespace VIESAS
                 }
             }
         }
-        private int GetNextConversionTickCheck()
+
+        public int GetNextConversionTickCheck()
         {
             return (int)(Find.TickManager.TicksGame + (GenDate.TicksPerDay * (VIESASMod.settings.ideologyConversionCheckDaysInterval + Rand.Range(-0.5f, 0.5f))));
         }
+
         public override void LoadedGame()
         {
             base.LoadedGame();
@@ -90,39 +92,36 @@ namespace VIESAS
             var believers = cachedPawnList;
             if (believers.Count >= VIESASMod.settings.minimumColonistCountForSchismToOccur)
             {
-                var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers).ToList();
-                int minPopValue;
-                if (convertablePawns.Count > 3)
+                var convertablePawns = GetConvertablePawns(Faction.OfPlayer.ideos.PrimaryIdeo, believers)
+                    .Where(x => x.ideo.Certainty <= VIESASMod.settings.thresholdOfColonistCertaintyToTurnToNewIdeology).ToList();
+                if (convertablePawns.Any())
                 {
-                    minPopValue = 2;
+                    int minPopValue;
+                    if (convertablePawns.Count > 3)
+                    {
+                        minPopValue = 2;
+                    }
+                    else
+                    {
+                        minPopValue = 1;
+                    }
+                    var countToConvert = Rand.RangeInclusive(minPopValue, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
+                    var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
+                    if (colonistsToConvert.Any())
+                    {
+                        StringBuilder ideoChanges = new StringBuilder();
+                        var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo, ideoChanges);
+                        Find.WindowStack.Add(new Window_ConfigureIdeo
+                        {
+                            colonistsToConvert = colonistsToConvert,
+                            newIdeo = newIdeo,
+                            ideoChanges = ideoChanges
+                        });
+                    }
                 }
-                else
-                {
-                    minPopValue = 1;
-                }
-                var countToConvert = Rand.RangeInclusive(minPopValue, (int)(convertablePawns.Count * VIESASMod.settings.pctOfColonistsToTurnToNewIdeology));
-                var colonistsToConvert = convertablePawns.InRandomOrder().Take(countToConvert).ToList();
-                StringBuilder ideoChanges = new StringBuilder();
-                var newIdeo = GenerateNewSplittedIdeoFrom(Faction.OfPlayer.ideos.PrimaryIdeo, ideoChanges);
-                Find.IdeoManager.Add(newIdeo);
-                StringBuilder joinerDesc = new StringBuilder();
-
-                foreach (var pawn in colonistsToConvert)
-                {
-                    var oldCertainty = pawn.ideo.Certainty;
-                    pawn.ideo.SetIdeo(newIdeo);
-                    Traverse.Create(pawn.ideo).Field("certainty").SetValue(oldCertainty);
-                    joinerDesc.AppendLine("  - " + pawn.LabelShort);
-                }
-                Find.LetterStack.ReceiveLetter("VIESAS.IdeoSplit".Translate(newIdeo.name), "VIESAS.IdeoSplitDesc".Translate(newIdeo.name,
-                    ideoChanges.ToString().TrimEndNewlines(), joinerDesc.ToString().TrimEndNewlines()), LetterDefOf.NegativeEvent, colonistsToConvert);
-
-                originIdeo = Faction.OfPlayer.ideos.PrimaryIdeo;
-                splittedIdeo = newIdeo;
-                nextConversionTickCheck = GetNextConversionTickCheck();
-                Faction.OfPlayer.ideos.Notify_ColonistChangedIdeo();
             }
         }
+
         private bool IdeoSplitCanOccur()
         {
             if (originIdeo != null)
@@ -216,14 +215,9 @@ namespace VIESAS
         private Ideo GenerateNewSplittedIdeoFrom(Ideo oldIdeo, StringBuilder ideoChanges)
         {
             var newIdeo = IdeoGenerator.MakeIdeo(oldIdeo.foundation.def);
+            oldIdeo.CopyTo(newIdeo);
             var parms = new IdeoGenerationParms(Faction.OfPlayer.def);
             RandomizeMemes(newIdeo, oldIdeo, parms, ideoChanges);
-            newIdeo.culture = oldIdeo.culture;
-            newIdeo.foundation.place = oldIdeo.foundation.place;
-            if (newIdeo.foundation is IdeoFoundation_Deity ideoFoundation_Deity)
-            {
-                ideoFoundation_Deity.GenerateDeities();
-            }
             newIdeo.foundation.GenerateTextSymbols();
             newIdeo.foundation.RandomizePrecepts(init: false, parms);
             newIdeo.foundation.GenerateLeaderTitle();
@@ -231,15 +225,17 @@ namespace VIESAS
             newIdeo.foundation.InitPrecepts(parms);
             newIdeo.RecachePrecepts();
             newIdeo.foundation.ideo.RegenerateDescription(force: true);
-
             newIdeo.thingStyleCategories = new List<ThingStyleCategoryWithPriority>();
             foreach (var cat in oldIdeo.thingStyleCategories)
             {
                 newIdeo.thingStyleCategories.Add(cat);
             }
             newIdeo.style.ResetStylesForThingDef();
-
-            newIdeo.primaryFactionColor = oldIdeo.primaryFactionColor;
+            if (oldIdeo.Fluid)
+            {
+                newIdeo.Fluid = true;
+                oldIdeo.development.CopyTo(newIdeo.development);
+            }
             return newIdeo;
         }
 
@@ -248,7 +244,7 @@ namespace VIESAS
             var memesCount = VIESASMod.settings.amountOfMemesChangedDuringSchism;
             var memesToAdd = IdeoUtilityCustom.GenerateRandomMemes(parms).Where(x => !oldIdeo.HasMeme(x)).Distinct();
             var normalMemes = memesToAdd.Where(x => x.category == MemeCategory.Normal).ToList();
-
+            newIdeo.memes.Clear();
             newIdeo.memes.AddRange(oldIdeo.memes);
             List<MemeDef> removedMemes = new List<MemeDef>();
             List<MemeDef> addedMemes = new List<MemeDef>();
